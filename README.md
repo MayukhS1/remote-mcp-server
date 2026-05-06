@@ -16,7 +16,32 @@ npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/rem
 
 ## Customizing your MCP Server
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`.
+To add your own skills and tools to the MCP server, you will need to register them in `src/index.ts`.
+
+### Adding a New Skill
+1. Use a tool like [skills.sh](https://skills.sh/) to add an AI skill to your project.
+2. The skill will be downloaded to the `.agents/skills/` directory as a Markdown file.
+3. Import the skill's Markdown file at the top of `src/index.ts`. *(Note: This template's `wrangler.jsonc` is already configured to import `.md` files as Text).*
+4. Register the skill inside the `init()` method of `src/index.ts` using `this.server.registerTool(...)`.
+
+**Pro-tip for Tool Descriptions:** When registering the skill, write a highly descriptive paragraph in the `description` field. The AI relies entirely on this description to know when to trigger the tool. Include trigger keywords, synonyms, and specific use-cases!
+
+**Example:**
+```typescript
+import myNewSkill from "../.agents/skills/my-new-skill/SKILL.md";
+
+// Inside init()...
+this.server.registerTool(
+	"get_my_new_skill",
+	{
+		description: "Use this tool whenever you are asked to [insert trigger keywords]. It contains instructions for...",
+		inputSchema: {}
+	},
+	async () => ({
+		content: [{ type: "text", text: myNewSkill }],
+	}),
+);
+```
 
 ## Connect to Cloudflare AI Playground
 
@@ -49,3 +74,19 @@ Update with this configuration:
 ```
 
 Restart Claude and you should see the tools become available.
+
+## Testing with MCP Inspector
+
+To test your skills and tools quickly and debug their output, you can use the official MCP inspector web UI.
+
+1. Ensure your local server is running in one terminal:
+```bash
+npx wrangler dev
+```
+2. Open a **new terminal window** and run the inspector pointing to your server:
+```bash
+npx @modelcontextprotocol/inspector npx -y mcp-remote http://localhost:8787/mcp
+```
+3. Open the `http://localhost:5173` URL (or whichever port it outputs) in your browser.
+4. Navigate to the **Tools** tab on the left sidebar.
+5. You will see your newly added skills listed as tools. Select one and click **Run Tool** to verify it successfully returns the correct output!
