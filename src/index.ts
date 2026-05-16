@@ -8,6 +8,7 @@ import writeASkillSkill from "../.agents/skills/write-a-skill/SKILL.md";
 import seoAuditSkill from "../.agents/skills/seo-audit/SKILL.md";
 import grillMeSkill from "../.agents/skills/grill-me/SKILL.md";
 import humanWriterSkill from "../.agents/skills/human-writer/SKILL.md";
+import securityReviewSkill from "../.agents/skills/security-review/SKILL.md";
 
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent {
@@ -86,6 +87,18 @@ export class MyMCP extends McpAgent {
 			},
 			async () => ({
 				content: [{ type: "text", text: humanWriterSkill }],
+			}),
+		);
+
+		// Security Review tool
+		this.server.registerTool(
+			"trigger_security_review",
+			{
+				description: "Use this tool whenever you are asked to scan code for security vulnerabilities, find bugs, check for SQL injection, XSS, command injection, exposed API keys, hardcoded secrets, insecure dependencies, access control issues, or check if code is secure.",
+				inputSchema: {}
+			},
+			async () => ({
+				content: [{ type: "text", text: securityReviewSkill }],
 			}),
 		);
 
