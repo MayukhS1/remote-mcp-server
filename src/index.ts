@@ -9,6 +9,7 @@ import seoAuditSkill from "../.agents/skills/seo-audit/SKILL.md";
 import grillMeSkill from "../.agents/skills/grill-me/SKILL.md";
 import humanWriterSkill from "../.agents/skills/human-writer/SKILL.md";
 import securityReviewSkill from "../.agents/skills/security-review/SKILL.md";
+import codeReviewSkill from "../.agents/skills/code-review-skill/SKILL.md";
 
 // Define our MCP agent with tools
 export class MyMCP extends McpAgent {
@@ -18,6 +19,29 @@ export class MyMCP extends McpAgent {
 	});
 
 	async init() {
+		// List Available Skills tool
+		this.server.registerTool(
+			"list_available_skills",
+			{
+				description: "Use this tool to list all available agent skills and their descriptions. Call this if you are unsure what capabilities the server provides or need a directory of tools.",
+				inputSchema: {}
+			},
+			async () => {
+				const tools = (this.server as any)._registeredTools || {};
+				const skillsList = Object.entries(tools)
+					.map(([name, tool]: [string, any]) => {
+						return `- ${name}: ${tool.description || "No description provided."}`;
+					})
+					.join('\n');
+				return {
+					content: [{
+						type: "text",
+						text: `Available Skills and Tools:\n${skillsList}` 
+					}],
+				};
+			}
+		);
+
 		// Frontend Design Skill tool
 		this.server.registerTool(
 			"get_frontend_design_guidelines",
@@ -102,52 +126,16 @@ export class MyMCP extends McpAgent {
 			}),
 		);
 
-		// Simple addition tool
+		// Code Review tool
 		this.server.registerTool(
-			"add",
-			{ inputSchema: { a: z.number(), b: z.number() } },
-			async ({ a, b }) => ({
-				content: [{ type: "text", text: String(a + b) }],
-			}),
-		);
-
-		// Calculator tool with multiple operations
-		this.server.registerTool(
-			"calculate",
+			"trigger_code_review",
 			{
-				inputSchema: {
-					operation: z.enum(["add", "subtract", "multiply", "divide"]),
-					a: z.number(),
-					b: z.number(),
-				},
+				description: "Use this tool whenever you are asked to review pull requests, conduct PR reviews, review code changes, establish review standards, or give constructive feedback on code quality and bugs across various languages.",
+				inputSchema: {}
 			},
-			async ({ operation, a, b }) => {
-				let result: number;
-				switch (operation) {
-					case "add":
-						result = a + b;
-						break;
-					case "subtract":
-						result = a - b;
-						break;
-					case "multiply":
-						result = a * b;
-						break;
-					case "divide":
-						if (b === 0)
-							return {
-								content: [
-									{
-										type: "text",
-										text: "Error: Cannot divide by zero",
-									},
-								],
-							};
-						result = a / b;
-						break;
-				}
-				return { content: [{ type: "text", text: String(result) }] };
-			},
+			async () => ({
+				content: [{ type: "text", text: codeReviewSkill }],
+			}),
 		);
 	}
 }
