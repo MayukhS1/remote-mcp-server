@@ -4,7 +4,9 @@ const RATE_LIMIT_WINDOW_MS = 60000;
 
 // KV keys are SHA-256 hex hashes of valid tokens; values are human labels.
 async function isAuthorized(request: Request, env: Env): Promise<boolean> {
-	const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
+	// Access-Key exists because Claude connectors reserve the Authorization header for OAuth.
+	const token =
+		request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1] ?? request.headers.get("access-key");
 	if (!token) return false;
 	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
 	const hash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");

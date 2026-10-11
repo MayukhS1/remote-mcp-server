@@ -4,7 +4,7 @@ A remote MCP server on Cloudflare Workers that serves agent skills as tools. Eve
 
 ## Authentication
 
-Clients must send `Authorization: Bearer <token>`. Valid tokens live in the `AUTH_TOKENS` KV namespace. Each key is the SHA-256 hash of a token, and its value is a label for whoever uses it. Raw tokens are never stored, so share each one when you create it.
+Clients must send `Authorization: Bearer <token>`, or `Access-Key: <token>` for clients that reserve `Authorization` (Claude connectors). Valid tokens live in the `AUTH_TOKENS` KV namespace. Each key is the SHA-256 hash of a token, and its value is a label for whoever uses it. Raw tokens are never stored, so share each one when you create it.
 
 Add, revoke or list tokens without changing code or redeploying:
 
