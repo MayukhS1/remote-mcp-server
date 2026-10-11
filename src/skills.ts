@@ -2,11 +2,14 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import frontendDesignSkill from "../.agents/skills/frontend-design/SKILL.md";
 import webDesignGuidelinesSkill from "../.agents/skills/web-design-guidelines/SKILL.md";
 import writeASkillSkill from "../.agents/skills/write-a-skill/SKILL.md";
+import writingForAgentsSkill from "../.agents/skills/writing-for-agents/SKILL.md";
+import writingForAgentsMechanics from "../.agents/skills/writing-for-agents/SKILL-MECHANICS.md";
 import seoAuditSkill from "../.agents/skills/seo-audit/SKILL.md";
 import grillMeSkill from "../.agents/skills/grill-me/SKILL.md";
 import humanWriterSkill from "../.agents/skills/human-writer/SKILL.md";
 import securityReviewSkill from "../.agents/skills/security-review/SKILL.md";
 import codeReviewSkill from "../.agents/skills/code-review-skill/SKILL.md";
+import vercelReactBestPractice from ".././.agents/skills/vercel-react-best-practices/SKILL.md";
 
 export function registerSkills(server: McpServer) {
 	// List Available Skills tool
@@ -26,7 +29,7 @@ export function registerSkills(server: McpServer) {
 			return {
 				content: [{
 					type: "text",
-					text: `Available Skills and Tools:\n${skillsList}` 
+					text: `Available Skills and Tools:\n${skillsList}`
 				}],
 			};
 		}
@@ -34,7 +37,7 @@ export function registerSkills(server: McpServer) {
 
 	// Frontend Design Skill tool
 	server.registerTool(
-		"get_frontend_design_guidelines",
+		"frontend_design",
 		{
 			description: "Use this tool whenever you are asked to design, style, or build any user interface, website, or frontend component (React, HTML/CSS). It contains critical guidelines for typography, color, and layout to ensure the UI looks premium, distinctive, and avoids generic AI aesthetics.",
 			inputSchema: {}
@@ -46,7 +49,7 @@ export function registerSkills(server: McpServer) {
 
 	// Web Design Guidelines tool
 	server.registerTool(
-		"get_web_design_guidelines",
+		"web_design",
 		{
 			description: "Use this tool whenever you are asked to review, audit, or check a UI/website for best practices, UX, or Web Interface Guidelines compliance. It contains rules on accessibility and design standards.",
 			inputSchema: {}
@@ -58,7 +61,7 @@ export function registerSkills(server: McpServer) {
 
 	// Write a Skill tool
 	server.registerTool(
-		"get_write_a_skill_guidelines",
+		"write_a_skill",
 		{
 			description: "Use this tool whenever you are asked to create, write, or build a new agent skill. It contains guidelines on proper structure, progressive disclosure, and bundled resources.",
 			inputSchema: {}
@@ -68,9 +71,24 @@ export function registerSkills(server: McpServer) {
 		}),
 	);
 
+	// Writing for Agents tool
+	server.registerTool(
+		"writing_for_agents",
+		{
+			description: "Use this tool whenever you are writing or editing any document an agent consumes: a skill (SKILL.md), AGENTS.md, CLAUDE.md, or agent rules. It covers context pointers, progressive disclosure, completion criteria, leading words, and pruning.",
+			inputSchema: {}
+		},
+		async () => ({
+			content: [
+				{ type: "text", text: writingForAgentsSkill },
+				{ type: "text", text: `# SKILL-MECHANICS.md\n\n${writingForAgentsMechanics}` },
+			],
+		}),
+	);
+
 	// SEO Audit tool
 	server.registerTool(
-		"get_seo_audit_guidelines",
+		"seo_audit",
 		{
 			description: "Use this tool whenever you are asked to audit, review, or diagnose SEO issues on a site. It contains guidelines for checking technical SEO, rankings, page speed, core web vitals, crawl errors, and indexing issues.",
 			inputSchema: {}
@@ -82,7 +100,7 @@ export function registerSkills(server: McpServer) {
 
 	// Grill Me tool
 	server.registerTool(
-		"trigger_grill_me",
+		"grill_me",
 		{
 			description: "Use this tool whenever you are asked to stress-test a plan, get grilled on a design, or relentlessly interview the user about a plan until reaching shared understanding.",
 			inputSchema: {}
@@ -94,7 +112,7 @@ export function registerSkills(server: McpServer) {
 
 	// Human Writer tool
 	server.registerTool(
-		"get_human_writer_guidelines",
+		"human_writer",
 		{
 			description: "Use this tool whenever you are asked to write, edit, or review documentation, commit messages, code comments, or UI copy. It contains guidelines for writing in a natural, human tone and improving clarity.",
 			inputSchema: {}
@@ -106,7 +124,7 @@ export function registerSkills(server: McpServer) {
 
 	// Security Review tool
 	server.registerTool(
-		"trigger_security_review",
+		"security_review",
 		{
 			description: "Use this tool whenever you are asked to scan code for security vulnerabilities, find bugs, check for SQL injection, XSS, command injection, exposed API keys, hardcoded secrets, insecure dependencies, access control issues, or check if code is secure.",
 			inputSchema: {}
@@ -118,7 +136,7 @@ export function registerSkills(server: McpServer) {
 
 	// Code Review tool
 	server.registerTool(
-		"trigger_code_review",
+		"code_review",
 		{
 			description: "Use this tool whenever you are asked to review pull requests, conduct PR reviews, review code changes, establish review standards, or give constructive feedback on code quality and bugs across various languages.",
 			inputSchema: {}
@@ -127,4 +145,16 @@ export function registerSkills(server: McpServer) {
 			content: [{ type: "text", text: codeReviewSkill }],
 		}),
 	);
+
+	// Vercel React Best Practice Tool
+	server.registerTool(
+		"vercel_react_best_practice",
+		{
+			description: "React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.",
+			inputSchema: {}
+		},
+		async () => ({
+			content: [{ type: "text", text: vercelReactBestPractice }]
+		})
+	)
 }
