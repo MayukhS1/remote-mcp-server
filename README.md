@@ -1,6 +1,39 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Agent Skills MCP Server on Cloudflare
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers.
+A remote MCP server on Cloudflare Workers that serves agent skills as tools. Every request to `/mcp` needs a bearer token (see [Authentication](#authentication)).
+
+## Authentication
+
+Clients must send `Authorization: Bearer <token>`, or `Access-Key: <token>` for clients that reserve `Authorization` (Claude connectors). Valid tokens live in the `AUTH_TOKENS` KV namespace. Each key is the SHA-256 hash of a token, and its value is a label for whoever uses it. Raw tokens are never stored, so share each one when you create it.
+
+Add, revoke or list tokens without changing code or redeploying:
+
+```bash
+TOKEN=$(openssl rand -hex 32); echo "$TOKEN"
+HASH=$(printf %s "$TOKEN" | shasum -a 256 | cut -d' ' -f1)
+npx wrangler kv key put --binding=AUTH_TOKENS --remote "$HASH" "cursor-mayukh"   # add
+npx wrangler kv key delete --binding=AUTH_TOKENS --remote "$HASH"                # revoke
+npx wrangler kv key list --binding=AUTH_TOKENS --remote                          # list (hashes + labels)
+```
+
+Use `--local` instead of `--remote` to add tokens for `wrangler dev`. A revoked token can keep working for up to about 60 seconds because of KV caching.
+
+The KV namespace is created automatically on the first `npx wrangler deploy`.
+
+Client config with Cursor `mcp.json`:
+
+```json
+{
+	"mcpServers": {
+		"skills": {
+			"url": "https://remote-mcp-server.<your-account>.workers.dev/mcp",
+			"headers": { "Authorization": "Bearer <token>" }
+		}
+	}
+}
+```
+
+With `mcp-remote`, add `"--header", "Authorization: Bearer <token>"` to `args`.
 
 ## Get started:
 
@@ -66,7 +99,9 @@ Update with this configuration:
 			"command": "npx",
 			"args": [
 				"mcp-remote",
-				"http://localhost:8787/mcp" // or remote-mcp-server-authless.your-account.workers.dev/mcp
+				"http://localhost:8787/mcp", // or remote-mcp-server.your-account.workers.dev/mcp
+				"--header",
+				"Authorization: Bearer <token>"
 			]
 		}
 	}
@@ -85,7 +120,7 @@ npx wrangler dev
 ```
 2. Open a **new terminal window** and run the inspector pointing to your server:
 ```bash
-npx @modelcontextprotocol/inspector npx -y mcp-remote http://localhost:8787/mcp
+npx @modelcontextprotocol/inspector npx -y mcp-remote http://localhost:8787/mcp --header "Authorization: Bearer <token>"
 ```
 3. Open the `http://localhost:5173` URL (or whichever port it outputs) in your browser.
 4. Navigate to the **Tools** tab on the left sidebar.

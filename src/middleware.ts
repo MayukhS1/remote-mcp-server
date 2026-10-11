@@ -2,8 +2,21 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_MAX = 100;
 const RATE_LIMIT_WINDOW_MS = 60000;
 
+// KV keys are SHA-256 hex hashes of valid tokens; values are human labels.
+async function isAuthorized(request: Request, env: Env): Promise<boolean> {
+	// Access-Key exists because Claude connectors reserve the Authorization header for OAuth.
+	const token =
+		request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1] ?? request.headers.get("access-key");
+	if (!token) return false;
+	const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+	const hash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+	// ponytail: cacheTtl means a revoked token can keep working for up to ~60s.
+	return (await env.AUTH_TOKENS.get(hash, { cacheTtl: 60 })) !== null;
+}
+
 export async function withMiddleware(
-	request: Request, 
+	request: Request,
+	env: Env,
 	handler: (req: Request) => Promise<Response> | Response
 ): Promise<Response> {
 	const url = new URL(request.url);
@@ -14,7 +27,12 @@ export async function withMiddleware(
 		return Response.redirect(url.toString(), 301);
 	}
 
-	// 2. Simple Rate Limiting (per-isolate)
+	// 2. Bearer token auth (CORS preflights never carry Authorization)
+	if (request.method !== "OPTIONS" && !(await isAuthorized(request, env))) {
+		return new Response("Unauthorized", { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
+	}
+
+	// 3. Simple Rate Limiting (per-isolate)
 	const ip = request.headers.get("cf-connecting-ip") || "unknown";
 	const now = Date.now();
 	let rl = rateLimitMap.get(ip);
@@ -38,10 +56,10 @@ export async function withMiddleware(
 		});
 	}
 
-	// 3. Process the actual request
+	// 4. Process the actual request
 	const response = await handler(request);
 
-	// 4. Add Security & Rate Limiting Headers
+	// 5. Add Security & Rate Limiting Headers
 	const newResponse = new Response(response.body, response);
 	
 	// Add HSTS Header

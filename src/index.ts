@@ -19,7 +19,7 @@ export class MyMCP extends McpAgent {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-		return withMiddleware(request, async (req) => {
+		return withMiddleware(request, env, async (req) => {
 			const url = new URL(req.url);
 			if (url.pathname === "/mcp") {
 				return MyMCP.serve("/mcp").fetch(req, env, ctx);
