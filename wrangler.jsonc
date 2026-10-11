@@ -17,7 +17,9 @@
 	"rules": [
 		{
 			"type": "Text",
-			"globs": ["**/*.md"],
+			"globs": [
+				"**/*.md"
+			],
 			"fallthrough": true
 		}
 	],
@@ -37,6 +39,12 @@
 			}
 		]
 	},
+	"kv_namespaces": [
+		{
+			"binding": "AUTH_TOKENS",
+			"id": "ae4120a4e2b04a07b741f2fe5be1710e"
+		}
+	],
 	"observability": {
 		"enabled": true
 	},
