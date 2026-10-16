@@ -10,6 +10,27 @@ import humanWriterSkill from "../.agents/skills/human-writer/SKILL.md";
 import securityReviewSkill from "../.agents/skills/security-review/SKILL.md";
 import codeReviewSkill from "../.agents/skills/code-review-skill/SKILL.md";
 import vercelReactBestPractice from ".././.agents/skills/vercel-react-best-practices/SKILL.md";
+import sbBrandscript from "../.agents/skills/storybrand-brandscript/SKILL.md";
+import sbBrandscriptTemplate from "../.agents/skills/storybrand-brandscript/references/brandscript-template.md";
+import sbBrandscriptModules from "../.agents/skills/storybrand-brandscript/references/modules.md";
+import sbBrandscriptRules from "../.agents/skills/storybrand-brandscript/references/rules.md";
+import sbReview from "../.agents/skills/storybrand-review/SKILL.md";
+import sbReviewRubric from "../.agents/skills/storybrand-review/references/review-rubric.md";
+import sbPage from "../.agents/skills/storybrand-page/SKILL.md";
+import sbPageSections from "../.agents/skills/storybrand-page/references/page-sections.md";
+import sbPageChecklist from "../.agents/skills/storybrand-page/references/mode-checklist.md";
+
+const storybrandFiles: [string, string][] = [
+	["storybrand-brandscript/SKILL.md", sbBrandscript],
+	["storybrand-brandscript/references/brandscript-template.md", sbBrandscriptTemplate],
+	["storybrand-brandscript/references/modules.md", sbBrandscriptModules],
+	["storybrand-brandscript/references/rules.md", sbBrandscriptRules],
+	["storybrand-review/SKILL.md", sbReview],
+	["storybrand-review/references/review-rubric.md", sbReviewRubric],
+	["storybrand-page/SKILL.md", sbPage],
+	["storybrand-page/references/page-sections.md", sbPageSections],
+	["storybrand-page/references/mode-checklist.md", sbPageChecklist],
+];
 
 export function registerSkills(server: McpServer) {
 	// List Available Skills tool
@@ -157,4 +178,16 @@ export function registerSkills(server: McpServer) {
 			content: [{ type: "text", text: vercelReactBestPractice }]
 		})
 	)
+
+	// StoryBrand tool (brandscript + review + page skills bundled)
+	server.registerTool(
+		"storybrand",
+		{
+			description: "Use this tool whenever you are asked to clarify a brand message, build a StoryBrand SB7 BrandScript or one-liner, audit website/brand copy for StoryBrand clarity (grunt test, hero-vs-guide), or review/rewrite a single page (homepage, landing, pricing, about) using StoryBrand. Contains three sub-skills: storybrand-brandscript (interview + build), storybrand-review (audit only), storybrand-page (one-page review or rewrite), plus their reference files.",
+			inputSchema: {}
+		},
+		async () => ({
+			content: storybrandFiles.map(([path, text]) => ({ type: "text" as const, text: `# ${path}\n\n${text}` })),
+		}),
+	);
 }
